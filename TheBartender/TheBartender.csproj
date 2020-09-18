@@ -1,14 +1,23 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>7dc7718d-6057-43b0-a4e0-9f82e3bce086</UserSecretsId>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.8" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="3.1.8" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="3.1.8" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.8" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.8" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.8" />
     <PackageReference Include="TwitchLib" Version="3.1.1" />
   </ItemGroup>
-
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

@@ -1,4 +1,5 @@
 ﻿using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -13,23 +14,25 @@ namespace TheBartender.Services
         private readonly DiscordSocketClient _discord;
         private TwitchAPI client;
         private List<string> quotes;
+        private MySettings _mySettings;
 
-        public TwitchService(DiscordSocketClient discord)
+        public TwitchService(MySettings mySettings, DiscordSocketClient discord)
         {
+            _mySettings = mySettings;
             _discord = discord;
-            
             client = new TwitchAPI();
-            client.Settings.ClientId = "3xcaz0hqa1appi8zx7ynkt9fpkcgcv";
-            client.Settings.Secret = "75zrmz8uoulmxgrw9rrejr7cmq40my";
+            client.Settings.ClientId = mySettings.ClientId;
+            client.Settings.Secret = mySettings.ClientSecret;
             client.Settings.Scopes = new List<TwitchLib.Api.Core.Enums.AuthScopes>() { TwitchLib.Api.Core.Enums.AuthScopes.Channel_Stream };
+
             InitQuotes();
             StartTask();
         }
 
         private void InitQuotes()
         {
-            string mentionEveryone = _discord.GetGuild(697851770101301378).EveryoneRole.Mention;
-            string mentionJon = _discord.GetGuild(697851770101301378).GetUser(204414709267431425).Mention;
+            string mentionEveryone = _discord.GetGuild(_mySettings.Guild).EveryoneRole.Mention;
+            string mentionJon = _discord.GetGuild(_mySettings.Guild).GetUser(_mySettings.PrimaryPerson).Mention;
             string streamUrl = "http://twitch.tv/JonJLevesque";
             quotes = new List<string>()
             {
@@ -43,7 +46,7 @@ namespace TheBartender.Services
             Task.Run(async () =>
             {
                 bool streamIsLive = false;
-                var channel = _discord.GetChannel(697853287692632074) as SocketTextChannel; // Gets the channel to send the message in
+                var channel = _discord.GetChannel(_mySettings.AnnouncementChannel) as SocketTextChannel; // Gets the channel to send the message in
                 
                 while (true)
                 {

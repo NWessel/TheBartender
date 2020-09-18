@@ -15,11 +15,13 @@ namespace TheBartender.Services
         private readonly CommandService _commands;
         private readonly DiscordSocketClient _discord;
         private readonly IServiceProvider _services;
+        private readonly MySettings _mySettings;
 
         public CommandHandlingService(IServiceProvider services)
         {
             _commands = services.GetRequiredService<CommandService>();
             _discord = services.GetRequiredService<DiscordSocketClient>();
+            _mySettings = services.GetRequiredService<MySettings>();
             _services = services;
 
             // Hook CommandExecuted to handle post-command-execution logic.
@@ -73,7 +75,7 @@ namespace TheBartender.Services
         private async Task UserJoinedAsync(SocketGuildUser user)
         {
             if (user.IsBot || user.IsWebhook) return;
-            var channel = _discord.GetChannel(697853287692632074) as SocketTextChannel; // Gets the channel to send the message in
+            var channel = _discord.GetChannel(_mySettings.AnnouncementChannel) as SocketTextChannel; // Gets the channel to send the message in
             await channel.SendMessageAsync($"Welcome {user.Mention} to {channel.Guild.Name}"); //Welcomes the new user
         }
     }

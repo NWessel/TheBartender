@@ -1,8 +1,10 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,9 +14,7 @@ namespace TheBartender
 {
     class Program
     {
-        public static string botToken = "NzU0NzI4NzA2NTEzMDQzNTU2.X1494Q.JvYfswZslm_qqW08b-MAwt_TJOs";
-        public static string clientId = "754728706513043556";
-        public static string clientSecret = "U1gnI-PYGdZPmaahaSjm4Aqvwp20tJ_h";
+        public static IConfigurationRoot Configuration;
 
         static void Main(string[] args)
             => new Program().MainAsync().GetAwaiter().GetResult();
@@ -27,6 +27,7 @@ namespace TheBartender
             // its documentation for the best way to do this.
             using (var services = ConfigureServices())
             {
+                MySettings mySettings = services.GetRequiredService<MySettings>();
                 var client = services.GetRequiredService<DiscordSocketClient>();
                 
                 client.Log += LogAsync;
@@ -34,7 +35,7 @@ namespace TheBartender
 
                 // Tokens should be considered secret data and never hard-coded.
                 // We can read from the environment variable to avoid hardcoding.
-                await client.LoginAsync(TokenType.Bot, botToken);
+                await client.LoginAsync(TokenType.Bot, mySettings.BotToken);
                 await client.StartAsync();
 
                 // Here we initialize the logic required to register our commands.
@@ -59,7 +60,17 @@ namespace TheBartender
 
         private ServiceProvider ConfigureServices()
         {
+            Configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetParent(AppContext.BaseDirectory).FullName)
+                .AddJsonFile("appsettings.json", false)
+                .AddUserSecrets<Program>()
+                .Build();
+            
+            MySettings mySettings = new MySettings();
+            Configuration.GetSection("MySettings").Bind(mySettings);
+
             return new ServiceCollection()
+                .AddSingleton(mySettings)
                 .AddSingleton<HttpClient>()
 
                 .AddSingleton<DiscordSocketClient>()
@@ -70,5 +81,15 @@ namespace TheBartender
                 .AddSingleton<TwitchService>()
                 .BuildServiceProvider();
         }
+    }
+
+    public class MySettings
+    {
+        public string BotToken { get; set; }
+        public string ClientId { get; set; }
+        public string ClientSecret { get; set; }
+        public ulong Guild { get; set; }
+        public ulong AnnouncementChannel { get; set; }
+        public ulong PrimaryPerson { get; set; }
     }
 }
